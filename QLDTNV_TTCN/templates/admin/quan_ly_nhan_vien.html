@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Quản lý nhân viên</title>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:'Segoe UI',sans-serif;
+    background:linear-gradient(135deg,#eef2ff,#f8fafc);
+    display:flex;
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar{
+    width:260px;
+    height:100vh;
+    background:linear-gradient(180deg,#1e293b,#0f172a);
+    color:white;
+    padding-top:25px;
+    position:fixed;
+}
+
+.sidebar h2{
+    text-align:center;
+    margin-bottom:30px;
+    font-size:20px;
+    letter-spacing:1px;
+}
+
+.sidebar ul{
+    list-style:none;
+    padding:0;
+}
+
+.sidebar li{
+    margin:8px 15px;
+}
+
+.sidebar a{
+    display:block;
+    padding:14px 18px;
+    border-radius:12px;
+    color:#cbd5e1;
+    text-decoration:none;
+    transition:0.3s;
+}
+
+.sidebar a:hover{
+    background:rgba(255,255,255,0.08);
+    color:white;
+    transform:translateX(5px);
+}
+
+.logout a{
+    color:#fbbf24;
+}
+
+/* ================= MAIN ================= */
+.main{
+    margin-left:260px;
+    width:100%;
+}
+
+/* HEADER */
+.header{
+    background:white;
+    padding:25px 40px;
+    box-shadow:0 4px 15px rgba(0,0,0,0.05);
+}
+
+.header h1{
+    margin:0;
+}
+
+/* CONTENT */
+.content{
+    padding:35px 40px;
+}
+
+/* CARD */
+.card{
+    background:white;
+    border-radius:20px;
+    padding:25px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.05);
+    margin-bottom:25px;
+    animation:fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn{
+    from{opacity:0;transform:translateY(10px)}
+    to{opacity:1;transform:translateY(0)}
+}
+
+/* FORM GRID */
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:18px;
+}
+
+.form-grid input,
+.form-grid select{
+    padding:12px;
+    border-radius:12px;
+    border:1px solid #e2e8f0;
+    font-size:14px;
+    transition:0.2s;
+}
+
+.form-grid input:focus,
+.form-grid select:focus{
+    border-color:#38bdf8;
+    box-shadow:0 0 0 3px rgba(56,189,248,0.2);
+    outline:none;
+}
+
+/* BUTTON */
+.btn-add{
+    grid-column:1/-1;
+    background:linear-gradient(45deg,#0ea5e9,#6366f1);
+    color:white;
+    border:none;
+    padding:14px;
+    border-radius:14px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.btn-add:hover{
+    transform:translateY(-2px);
+}
+
+/* FILTER */
+.filter{
+    margin-bottom:20px;
+    font-weight:600;
+}
+
+/* TABLE */
+.table-box{
+    background:white;
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 10px 30px rgba(0,0,0,0.05);
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+thead{
+    background:#f1f5f9;
+    position:sticky;
+    top:0;
+}
+
+th,td{
+    padding:15px;
+    font-size:14px;
+}
+
+tbody tr{
+    border-top:1px solid #f1f5f9;
+    transition:0.2s;
+}
+
+tbody tr:hover{
+    background:#f8fafc;
+    transform:scale(1.003);
+}
+
+/* DELETE */
+.delete{
+    color:#ef4444;
+    font-weight:bold;
+    text-decoration:none;
+}
+
+/* ALERT */
+.alert{
+    background:#dcfce7;
+    padding:14px;
+    border-radius:12px;
+    margin-bottom:20px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <h2>⚙ ADMIN PANEL</h2>
+    <ul>
+        <li><a href="/admin/trang-chu">🏠 Trang chủ</a></li>
+        <li><a href="/admin/nhan-vien">👨‍💼 Nhân viên</a></li>
+        <li><a href="/admin/quan-ly-khoa-dao-tao">📚 Khóa đào tạo</a></li>
+        <li><a href="/admin/quan-ly-tai-khoan">🔐 Tài khoản</a></li>
+        <li><a href="/admin/bao-cao">📊 Báo cáo</a></li>
+        <li class="logout"><a href="/dang-xuat">🚪 Đăng xuất</a></li>
+    </ul>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<div class="header">
+    <h1>Quản lý nhân viên</h1>
+</div>
+
+<div class="content">
+
+{% if request.args.get('success') %}
+<div class="alert">✅ Thêm nhân viên thành công</div>
+{% endif %}
+
+<h3>Tổng số nhân viên: {{ nhan_vien|length }}</h3>
+
+<!-- FORM -->
+<div class="card">
+<h2>Thêm nhân viên</h2>
+
+<form method="POST"
+action="{{ url_for('admin.them_nhan_vien') }}"
+class="form-grid">
+
+<input name="ho_ten" placeholder="Họ tên" required>
+<input type="date" name="ngay_sinh" required>
+
+<select name="gioi_tinh" required>
+<option value="">Giới tính</option>
+<option>Nam</option>
+<option>Nữ</option>
+</select>
+
+<input name="chuc_vu" placeholder="Chức vụ" required>
+<input name="email" placeholder="Email" required>
+<input name="so_dien_thoai" placeholder="SĐT" required>
+
+<select name="ma_phong" required>
+<option value="">Phòng ban</option>
+{% for pb in phong_ban %}
+<option value="{{ pb[0] }}">{{ pb[1] }}</option>
+{% endfor %}
+</select>
+
+<button class="btn-add">➕ Thêm nhân viên</button>
+</form>
+</div>
+
+<!-- FILTER -->
+<div class="filter">
+Lọc theo phòng ban:
+<select id="filterPhong" onchange="locPhong()">
+<option value="all">Tất cả</option>
+{% for pb in phong_ban %}
+<option value="{{ pb[1] }}">{{ pb[1] }}</option>
+{% endfor %}
+</select>
+</div>
+
+<!-- TABLE -->
+<div class="table-box">
+<table>
+<thead>
+<tr>
+<th>Mã</th>
+<th>Họ tên</th>
+<th>Ngày sinh</th>
+<th>Giới tính</th>
+<th>Chức vụ</th>
+<th>Email</th>
+<th>SĐT</th>
+<th>Phòng ban</th>
+<th></th>
+</tr>
+</thead>
+
+<tbody id="tableNV">
+{% for nv in nhan_vien %}
+<tr data-phong="{{ nv[7] }}">
+<td>{{ nv[0] }}</td>
+<td>{{ nv[1] }}</td>
+<td>{{ nv[2] }}</td>
+<td>{{ nv[3] }}</td>
+<td>{{ nv[4] }}</td>
+<td>{{ nv[5] }}</td>
+<td>{{ nv[6] }}</td>
+<td>{{ nv[7] }}</td>
+<td>
+<a class="delete"
+href="{{ url_for('admin.xoa_nhan_vien', ma_nv=nv[0]) }}"
+onclick="return confirm('Xóa nhân viên?')">
+🗑
+</a>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+
+</div>
+</div>
+
+<script>
+function locPhong(){
+const phong=document.getElementById("filterPhong").value;
+document.querySelectorAll("#tableNV tr").forEach(row=>{
+if(phong==="all"||row.dataset.phong===phong){
+row.style.display="";
+}else{
+row.style.display="none";
+}
+});
+}
+</script>
+
+</body>
+</html>

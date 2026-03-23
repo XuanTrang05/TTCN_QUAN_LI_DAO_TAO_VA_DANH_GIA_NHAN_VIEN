@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Trang chủ nhân viên</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/nhan_vien.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- ✅ ADD: FONT + UI STYLE -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body{
+            margin:0;
+            font-family:'Poppins', sans-serif;
+            background: linear-gradient(135deg,#667eea,#764ba2);
+            min-height:100vh;
+        }
+
+        /* ===== HEADER ===== */
+        .header{
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(12px);
+            padding:30px 40px;
+            color:white;
+            box-shadow:0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .header h1{
+            margin:0
+        }
+
+        /* ===== DASHBOARD ===== */
+        .dashboard{
+            display:grid;
+            grid-template-columns: repeat(auto-fit,minmax(260px,1fr));
+            gap:30px;
+            padding:40px;
+        }
+
+        /* ===== CARD ===== */
+        .card{
+            text-decoration:none;
+            color:#333;
+            background:white;
+            padding:30px;
+            border-radius:18px;
+            text-align:center;
+            transition: all .35s ease;
+            box-shadow:0 15px 35px rgba(0,0,0,0.15);
+            position:relative;
+            overflow:hidden;
+        }
+
+        .card::before{
+            content:"";
+            position:absolute;
+            width:120%;
+            height:120%;
+            background:linear-gradient(45deg,transparent,rgba(102,126,234,0.25),transparent);
+            top:-20%;
+            left:-20%;
+            transform:rotate(25deg);
+            transition:all .6s;
+        }
+
+        .card:hover::before{
+            top:0;
+            left:0;
+        }
+
+        .card:hover{
+            transform: translateY(-10px) scale(1.02);
+            box-shadow:0 25px 45px rgba(0,0,0,0.25);
+        }
+
+        .card-icon{
+            font-size:42px;
+            margin-bottom:15px;
+            color:#667eea;
+        }
+
+        .card h3{
+            margin-bottom:10px;
+        }
+
+        .card p{
+            color:#777;
+            font-size:14px;
+        }
+
+        /* ===== LOGOUT BUTTON ===== */
+        .logout-btn{
+            padding:12px 18px;
+            background: linear-gradient(45deg,#ff4b2b,#ff416c);
+            color:white;
+            border:none;
+            border-radius:10px;
+            cursor:pointer;
+            font-size:14px;
+            transition:.3s;
+            box-shadow:0 8px 18px rgba(0,0,0,0.2);
+        }
+
+        .logout-btn:hover{
+            transform:translateY(-2px);
+            box-shadow:0 12px 25px rgba(0,0,0,0.3);
+        }
+
+        /* ===== MOBILE ===== */
+        @media(max-width:768px){
+            .header{
+                padding:25px;
+            }
+
+            .dashboard{
+                padding:25px;
+                gap:20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<div class="header">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1>👋 Chào mừng {{ ten_nhan_vien }}</h1>
+            <p>Theo dõi quá trình học tập và kết quả đánh giá của bạn</p>
+        </div>
+
+        <!-- ===== NÚT ĐĂNG XUẤT (GIỮ NGUYÊN CHỨC NĂNG) ===== -->
+        <button onclick="xacNhanDangXuat()" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Đăng xuất
+        </button>
+    </div>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div class="dashboard">
+
+    <!-- Khóa đào tạo -->
+    <a href="{{ url_for('nhan_vien.khoa_dao_tao') }}" class="card">
+        <i class="fas fa-book-open card-icon"></i>
+        <h3>Khóa đào tạo của tôi</h3>
+        <p>Xem các khóa đào tạo đang và sắp tham gia</p>
+    </a>
+
+    <!-- Kết quả đánh giá -->
+    <a href="{{ url_for('nhan_vien.ket_qua') }}" class="card">
+        <i class="fas fa-chart-line card-icon"></i>
+        <h3>Kết quả đánh giá</h3>
+        <p>Xem điểm số và nhận xét từ người đánh giá</p>
+    </a>
+
+    <!-- Thông tin cá nhân -->
+    <a href="/nhan_vien/thong-tin" class="card">
+        <i class="fas fa-user card-icon"></i>
+        <h3>Thông tin cá nhân</h3>
+        <p>Xem và cập nhật thông tin cá nhân</p>
+    </a>
+
+</div>
+
+<!-- ===== SCRIPT XÁC NHẬN ĐĂNG XUẤT (GIỮ NGUYÊN) ===== -->
+<script>
+    function xacNhanDangXuat() {
+        const xacNhan = confirm("Bạn có chắc muốn đăng xuất?");
+        if (xacNhan) {
+            window.location.href = "{{ url_for('dang_xuat') }}";
+        }
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Đăng nhập hệ thống</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+<style>
+
+/* ===== FIX TRÀN WIDTH ===== */
+*{
+    box-sizing: border-box;
+}
+
+/* ===== BACKGROUND SINH ĐỘNG ===== */
+body{
+    margin:0;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    height:100vh;
+    background: linear-gradient(135deg,#4facfe,#00f2fe,#667eea);
+    background-size: 300% 300%;
+    animation: gradientMove 12s ease infinite;
+}
+
+@keyframes gradientMove{
+    0%{background-position:0% 50%}
+    50%{background-position:100% 50%}
+    100%{background-position:0% 50%}
+}
+
+/* ===== CĂN GIỮA ===== */
+.login-container{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+/* ===== LOGIN BOX ===== */
+.login-box{
+    width:380px;
+    padding:40px 35px;
+    border-radius:20px;
+    backdrop-filter: blur(18px);
+    background: rgba(255,255,255,0.15);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+    border:1px solid rgba(255,255,255,0.2);
+    color:white;
+}
+
+/* ===== TITLE ===== */
+.login-box h2{
+    text-align:center;
+    margin-bottom:25px;
+    font-size:28px;
+}
+
+/* ===== INPUT ===== */
+.login-box input{
+    width:100%;
+    padding:12px;
+    margin-top:6px;
+    margin-bottom:15px;
+    border-radius:10px;
+    border:none;
+    outline:none;
+    font-size:15px;
+    background: rgba(255,255,255,0.2);
+    color:white;
+}
+
+/* ===== PASSWORD BOX ===== */
+.password-box{
+    position:relative;
+    width:100%;
+}
+
+.password-box input{
+    padding-right:110px; /* chừa chỗ icon + text */
+}
+
+/* ===== SHOW PASS ===== */
+.show-pass{
+    position:absolute;
+    right:12px;
+    top:50%;
+    transform:translateY(-50%);
+    cursor:pointer;
+    font-size:14px;
+    display:flex;
+    align-items:center;
+    gap:5px;
+    white-space: nowrap;
+}
+
+/* ===== BUTTON ===== */
+.login-box button{
+    width:100%;
+    padding:13px;
+    border:none;
+    border-radius:12px;
+    font-size:16px;
+    font-weight:bold;
+    color:white;
+    cursor:pointer;
+    background: linear-gradient(45deg,#ff6a00,#ffb347);
+    transition:0.3s;
+}
+
+.login-box button:hover{
+    transform: translateY(-2px);
+}
+
+/* ===== ERROR ===== */
+.error{
+    margin-top:15px;
+    padding:10px;
+    background: rgba(255,0,0,0.2);
+    border-radius:8px;
+    text-align:center;
+}
+
+/* ===== FOOTER ===== */
+.footer-text{
+    text-align:center;
+    margin-top:20px;
+    font-size:13px;
+    opacity:0.8;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="login-container">
+    <div class="login-box">
+
+        <h2>🔐 ĐĂNG NHẬP HỆ THỐNG</h2>
+
+        <form action="/dang-nhap" method="post">
+
+            <label>Tên đăng nhập</label>
+            <input type="text" name="username" placeholder="Nhập username" required>
+
+            <label>Mật khẩu</label>
+
+            <div class="password-box">
+                <input type="password" name="password" id="passwordInput" placeholder="Nhập mật khẩu" required>
+
+                <!-- ICON + TEXT -->
+                <span class="show-pass" onclick="togglePassword()">
+                    <span id="eyeIcon">👁</span>
+                    <span id="eyeText">Hiển thị</span>
+                </span>
+            </div>
+
+            <button type="submit">Đăng nhập</button>
+
+        </form>
+
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <div class="footer-text">
+            Hệ thống quản lý đào tạo nhân viên
+            <p>---HOÀNG THỊ XUÂN TRANG---</p>
+        </div>
+
+    </div>
+</div>
+
+<script>
+function togglePassword(){
+    const pass = document.getElementById("passwordInput");
+    const icon = document.getElementById("eyeIcon");
+    const text = document.getElementById("eyeText");
+
+    if(pass.type === "password"){
+        pass.type = "text";
+        icon.innerHTML = "🙈";
+        text.innerHTML = "Ẩn";
+    }else{
+        pass.type = "password";
+        icon.innerHTML = "👁";
+        text.innerHTML = "Hiển thị";
+    }
+}
+</script>
+
+</body>
+</html>

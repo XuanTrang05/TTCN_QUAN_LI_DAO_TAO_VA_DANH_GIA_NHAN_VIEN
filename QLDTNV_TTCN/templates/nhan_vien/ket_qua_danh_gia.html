@@ -1,0 +1,222 @@
+<!DOCTYPE html> 
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Kết quả đánh giá</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- ChartJS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+/* ===== BODY FLEX CHO SIDEBAR ===== */
+body{
+    display:flex;
+    min-height:100vh;
+    background:linear-gradient(135deg,#eef2ff,#f8fbff);
+    font-family:'Segoe UI',sans-serif;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar{
+    width:250px;
+    background:#1e293b;
+    padding:25px 15px;
+    color:white;
+    min-height:100vh;
+    box-shadow:4px 0 20px rgba(0,0,0,0.15);
+}
+
+.sidebar h4{
+    margin-bottom:30px;
+    font-weight:600;
+}
+
+.menu-item{
+    display:block;
+    color:#cbd5e1;
+    padding:12px 14px;
+    border-radius:10px;
+    margin-bottom:8px;
+    text-decoration:none;
+    transition:0.25s;
+}
+
+.menu-item:hover{
+    background:#334155;
+    color:white;
+    transform:translateX(5px);
+}
+
+.logout{
+    color:#fbbf24 !important;
+    font-weight:600;
+}
+
+/* ===== CONTENT ===== */
+.main-content{
+    flex:1;
+    padding:40px;
+}
+
+/* ===== CARD UI NÂNG CẤP ===== */
+.card{
+    border:none;
+    border-radius:18px;
+    overflow:hidden;
+    transition:0.3s;
+}
+
+.card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 20px 35px rgba(0,0,0,0.15);
+}
+
+.table{
+    border-radius:12px;
+    overflow:hidden;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- ===== SIDEBAR ===== -->
+<div class="sidebar">
+    <h4>👨‍💻 Nhân viên</h4>
+
+    <a href="/nhan_vien/trang-chu-tin" class="menu-item">
+        🏠 Trang chủ
+    </a>
+
+    <a href="{{ url_for('nhan_vien.khoa_dao_tao') }}" class="menu-item">
+        📘 Khóa đào tạo của tôi
+    </a>
+
+    <a href="{{ url_for('nhan_vien.ket_qua') }}" class="menu-item">
+        📊 Kết quả đánh giá
+    </a>
+
+    <a href="/nhan_vien/thong-tin" class="menu-item">
+        👤 Thông tin cá nhân
+    </a>
+
+    <a href="{{ url_for('dang_xuat') }}" class="menu-item logout">
+        🚪 Đăng xuất
+    </a>
+</div>
+
+
+<!-- ===== CONTENT (GIỮ NGUYÊN CODE CŨ) ===== -->
+<div class="main-content">
+
+<div class="container mt-4">
+
+    <h3 class="mb-4">📊 KẾT QUẢ ĐÁNH GIÁ ĐÀO TẠO</h3>
+
+    <!-- ================= BẢNG KHÓA ĐÃ HOÀN THÀNH ================= -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <span>Khóa đào tạo đã hoàn thành</span>
+
+            <a href="{{ url_for('nhan_vien.xuat_excel_diem') }}"
+               class="btn btn-light btn-sm">
+                ⬇ Xuất Excel bảng điểm
+            </a>
+        </div>
+
+        <div class="card-body">
+            <table class="table table-bordered table-hover text-center align-middle">
+                <thead class="table-success">
+                    <tr>
+                        <th>Tên khóa đào tạo</th>
+                        <th>Điểm số</th>
+                        <th>Nhận xét</th>
+                        <th>Ngày đánh giá</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for k in khoa_hoan_thanh %}
+                    <tr>
+                        <td>{{ k.ten_khoa }}</td>
+                        <td>{{ k.diem_so }}</td>
+                        <td>{{ k.nhan_xet }}</td>
+                        <td>{{ k.ngay_danh_gia }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4" class="text-muted">
+                            Chưa có kết quả đánh giá
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ================= BIỂU ĐỒ ĐIỂM ================= -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            Biểu đồ điểm trung bình theo khóa học
+        </div>
+        <div class="card-body">
+            {% if khoa_hoan_thanh|length > 0 %}
+                <canvas id="bieuDoDiem" height="100"></canvas>
+            {% else %}
+                <p class="text-muted text-center mb-0">
+                    Chưa có dữ liệu để hiển thị biểu đồ
+                </p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+</div>
+
+<!-- ================= SCRIPT BIỂU ĐỒ (GIỮ NGUYÊN) ================= -->
+<script>
+    const rawData = {{ khoa_hoan_thanh | tojson | safe }};
+
+    const tenKhoa = rawData.map(item => item.ten_khoa);
+    const diemSo  = rawData.map(item => item.diem_so);
+
+    if (tenKhoa.length > 0) {
+        new Chart(document.getElementById('bieuDoDiem'), {
+            type: 'bar',
+            data: {
+                labels: tenKhoa,
+                datasets: [{
+                    label: 'Điểm số',
+                    data: diemSo,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 10,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

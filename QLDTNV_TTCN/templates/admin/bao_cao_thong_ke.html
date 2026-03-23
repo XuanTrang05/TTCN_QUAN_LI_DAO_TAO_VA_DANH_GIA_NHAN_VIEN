@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Báo cáo đào tạo</title>
+    <link rel="stylesheet" href="/static/css/giao_dien.css">
+
+    <!-- ✅ THƯ VIỆN VẼ BIỂU ĐỒ -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- ✅ BỔ SUNG STYLE CHO SIDEBAR -->
+    <style>
+        body{
+            margin-left:220px; /* Đẩy nội dung sang phải để không đè sidebar */
+        }
+
+        .sidebar{
+            position: fixed;
+            left:0;
+            top:0;
+            width:200px;
+            height:100vh;
+            background:#1e293b;
+            padding-top:20px;
+        }
+
+        .sidebar ul{
+            list-style:none;
+            padding:0;
+        }
+
+        .sidebar ul li{
+            padding:12px 20px;
+        }
+
+        .sidebar ul li a{
+            color:white;
+            text-decoration:none;
+            display:block;
+            font-weight:500;
+        }
+
+        .sidebar ul li a:hover{
+            background:#334155;
+            border-radius:6px;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ================= SIDEBAR ================= -->
+<div class="sidebar">
+    <ul>
+        <li><a href="/admin/trang-chu">🏠 Trang chủ</a></li>
+        <li><a href="/admin/nhan-vien">👨‍💼 Nhân viên</a></li>
+        <li><a href="/admin/quan-ly-khoa-dao-tao">📚 Khóa đào tạo</a></li>
+        <li><a href="/admin/quan-ly-tai-khoan">🔐 Tài khoản</a></li>
+        <li><a href="/admin/bao-cao">📊 Báo cáo</a></li>
+        <li><a href="/dang-xuat" style="color:#fbbf24;">🚪 Đăng xuất</a></li>
+    </ul>
+</div>
+
+<h1>BÁO CÁO – KẾT QUẢ ĐÀO TẠO</h1>
+
+<!-- ================= TRA CỨU ================= -->
+<div style="margin-bottom:15px">
+    🔍 <b>Tra cứu theo mã nhân viên:</b>
+    <input type="text" id="maNhanVien" placeholder="Nhập mã nhân viên">
+
+    &nbsp;&nbsp;
+    📚 <b>Xem theo khóa đào tạo:</b>
+    <select id="chonKhoa" onchange="locDuLieu()">
+        <option value="all">-- Tất cả khóa đào tạo --</option>
+    </select>
+
+    <button onclick="locDuLieu()">Tìm kiếm</button>
+</div>
+
+<!-- ================= XUẤT EXCEL ================= -->
+<div style="margin:15px 0">
+    📤 <button onclick="xuatExcel()">Xuất Excel</button>
+</div>
+
+<!-- ================= BẢNG ================= -->
+<table class="bang-bao-cao">
+    <thead>
+        <tr>
+            <th>Mã NV</th>
+            <th>Nhân viên</th>
+            <th>Khóa đào tạo</th>
+            <th>Điểm</th>
+            <th>Nhận xét</th>
+            <th>Ngày đánh giá</th>
+        </tr>
+    </thead>
+    <tbody id="bangBaoCao"></tbody>
+</table>
+
+<!-- ================= BIỂU ĐỒ CỘT (GIỮ NGUYÊN) ================= -->
+<h2 style="margin-top:40px">📊 Thống kê điểm trung bình theo khóa đào tạo</h2>
+<canvas id="bieuDoDiemTB" height="120"></canvas>
+
+<!-- 🔥 ================= BỔ SUNG BIỂU ĐỒ TRÒN + LINE ================= -->
+<h2 style="margin-top:40px">📈 Phân tích kết quả đào tạo</h2>
+
+<div style="display:flex; gap:40px;">
+    <div style="width:45%">
+        <h4 style="text-align:center">Biểu đồ tròn – Tỷ lệ điểm TB</h4>
+        <canvas id="pieChart"></canvas>
+    </div>
+
+    <div style="width:45%">
+        <h4 style="text-align:center">Biểu đồ line – Xu hướng điểm TB</h4>
+        <canvas id="lineChart"></canvas>
+    </div>
+</div>
+
+<script>
+let duLieuGoc = [];
+
+/* ================= LOAD BẢNG ================= */
+fetch("/admin/api/bao-cao-danh-gia")
+    .then(res => res.json())
+    .then(data => {
+        duLieuGoc = data;
+        hienThiBang(data);
+        taoDanhSachKhoa(data);
+    });
+
+function hienThiBang(data) {
+    const tbody = document.getElementById("bangBaoCao");
+    tbody.innerHTML = "";
+
+    if (data.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" style="text-align:center;color:red">
+                    Không có dữ liệu phù hợp
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    data.forEach(r => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${r.maNhanVien ?? ""}</td>
+            <td>${r.nhanVien}</td>
+            <td>${r.khoa}</td>
+            <td>${r.diem}</td>
+            <td>${r.nhanXet}</td>
+            <td>${r.ngayDanhGia}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function taoDanhSachKhoa(data) {
+    const select = document.getElementById("chonKhoa");
+    const dsKhoa = [...new Set(data.map(x => x.khoa?.trim()))].filter(Boolean);
+
+    dsKhoa.forEach(k => {
+        const opt = document.createElement("option");
+        opt.value = k;
+        opt.textContent = k;
+        select.appendChild(opt);
+    });
+}
+
+function locDuLieu() {
+    const maNV = document.getElementById("maNhanVien").value.trim().toLowerCase();
+    const khoa = document.getElementById("chonKhoa").value.trim().toLowerCase();
+
+    let ketQua = duLieuGoc;
+
+    if (maNV !== "") {
+        ketQua = ketQua.filter(x =>
+            x.maNhanVien &&
+            x.maNhanVien.toString().toLowerCase().includes(maNV)
+        );
+    }
+
+    if (khoa !== "all") {
+        ketQua = ketQua.filter(x =>
+            x.khoa && x.khoa.trim().toLowerCase() === khoa
+        );
+    }
+
+    hienThiBang(ketQua);
+}
+
+/* ================= BIỂU ĐỒ ================= */
+fetch("/admin/api/thong-ke/diem-trung-binh-theo-khoa")
+    .then(res => res.json())
+    .then(data => {
+        const labels = data.map(x => x.khoa);
+        const values = data.map(x => x.diemTB);
+
+        new Chart(document.getElementById("bieuDoDiemTB"), {
+            type: "bar",
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: "Điểm trung bình",
+                    data: values,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true, max: 10 }
+                }
+            }
+        });
+
+        new Chart(document.getElementById("pieChart"), {
+            type: "pie",
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: [
+                        "#4CAF50","#2196F3","#FFC107",
+                        "#FF5722","#9C27B0","#00BCD4"
+                    ]
+                }]
+            }
+        });
+
+        new Chart(document.getElementById("lineChart"), {
+            type: "line",
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: "Điểm trung bình",
+                    data: values,
+                    borderColor: "#2196F3",
+                    backgroundColor: "rgba(33,150,243,0.2)",
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true, max: 10 }
+                }
+            }
+        });
+    });
+
+/* ================= XUẤT EXCEL ================= */
+function xuatExcel() {
+    window.location.href = "/admin/api/xuat-excel";
+}
+</script>
+
+</body>
+</html>

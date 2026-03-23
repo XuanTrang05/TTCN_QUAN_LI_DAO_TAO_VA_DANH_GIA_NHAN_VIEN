@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Thực hiện đánh giá</title>
+
+<style>
+
+body{
+    font-family: Arial;
+    background:#f3f6fb;
+    margin:0;
+    display:flex; /* ⭐ ADD FLEX CHO SIDEBAR */
+}
+
+/* ================= SIDEBAR ================= */
+
+.sidebar{
+    width:250px;
+    background:#144a80;
+    color:white;
+    min-height:100vh;
+    padding:20px;
+    position:fixed;
+    left:0;
+    top:0;
+}
+
+.sidebar h2{
+    font-size:22px;
+    margin-bottom:30px;
+}
+
+.sidebar a{
+    display:block;
+    color:#ffffff;
+    text-decoration:none;
+    padding:12px;
+    border-radius:8px;
+    margin-bottom:8px;
+    transition:0.2s;
+}
+
+.sidebar a:hover{
+    background:#3c6297;
+    color:white;
+}
+
+/* ================= CONTENT ================= */
+
+.main-content{
+    margin-left:270px; /* ⭐ CHỪA CHỖ SIDEBAR */
+    padding:30px;
+    width:100%;
+}
+
+/* ================= CODE CŨ GIỮ NGUYÊN ================= */
+
+.title{
+    font-size:28px;
+    font-weight:bold;
+    margin-bottom:20px;
+}
+
+.section{
+    margin-top:40px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+    gap:20px;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.1);
+}
+
+.card h3{
+    margin-bottom:10px;
+}
+
+.info{
+    margin:5px 0;
+}
+
+.btn{
+    margin-top:15px;
+    padding:10px 18px;
+    border:none;
+    border-radius:8px;
+    background:#2563eb;
+    color:white;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.btn:hover{
+    background:#1e40af;
+}
+
+.badge{
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:bold;
+}
+.badge-done{
+    background:#dcfce7;
+    color:#166534;
+}
+.badge-learning{
+    background:#dbeafe;
+    color:#1e40af;
+}
+.badge-wait{
+    background:#fef9c3;
+    color:#854d0e;
+}
+
+.chart-box{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.1);
+    margin-top:20px;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- ================= SIDEBAR ADD ================= -->
+<div class="sidebar">
+    <h2>ĐÁNH GIÁ</h2>
+
+    <a href="/nguoi_danh_gia">🏠 Trang chủ</a>
+    <a href="/nguoi_danh_gia/khoa-dao-tao">📚Khóa đào tạo</a>
+    <a href="/nguoi_danh_gia/thong_ke">📝Thực hiện đánh giá</a>
+    <a href="/nguoi_danh_gia/thong_ke_danh_gia">📊 Thống kê đánh giá</a>
+    <a href="/dang_xuat">🚪 Đăng xuất</a>
+</div>
+
+<!-- ================= MAIN CONTENT WRAP ================= -->
+<div class="main-content">
+
+<div class="title">📊 Thực hiện đánh giá</div>
+
+{% if ten_khoa %}
+<div class="card" style="margin-bottom:20px;">
+    <div class="info" style="font-size:18px;font-weight:bold;">
+        📘 Khóa học: {{ ten_khoa }}
+    </div>
+</div>
+{% endif %}
+
+{% if xem_lai %}
+<div class="section">
+    <div class="card">
+        <h3>📊 Kết quả đánh giá</h3>
+
+        <div class="info">👤 Nhân viên: {{ xem_lai.ten_nv }}</div>
+        <div class="info">⭐ Điểm: {{ xem_lai.diem }}</div>
+        <div class="info">📝 Nhận xét: {{ xem_lai.nhan_xet }}</div>
+        <div class="info">📅 Ngày đánh giá: {{ xem_lai.ngay }}</div>
+
+        <a href="/nguoi_danh_gia/khoa/{{ ma_khoa }}">
+            <button class="btn">⬅ Quay lại</button>
+        </a>
+    </div>
+</div>
+
+{% elif nv %}
+<div class="section">
+    <div class="card">
+
+        <h3>📝 Chấm điểm học viên</h3>
+
+        <div class="info">
+            👤 Nhân viên: <b>{{ nv[0] }}</b>
+        </div>
+
+        <form method="POST"
+              action="/nguoi_danh_gia/cham-diem/{{ ma_khoa }}/{{ ma_nv }}">
+
+            <input type="hidden" name="ma_nv" value="{{ ma_nv }}">
+            <input type="hidden" name="ma_khoa" value="{{ ma_khoa }}">
+
+            <div class="info">
+                ⭐ Điểm:
+                <input type="number" name="diem"
+                       min="0" max="10" step="0.1"
+                       required
+                       style="padding:6px;border-radius:6px;border:1px solid #ccc;">
+            </div>
+
+            <div class="info">
+                📝 Nhận xét:
+                <textarea name="nhan_xet"
+                          style="width:100%;height:80px;border-radius:6px;border:1px solid #ccc;padding:8px;"></textarea>
+            </div>
+
+            <button class="btn" type="submit">
+                💾 Lưu đánh giá
+            </button>
+
+        </form>
+
+    </div>
+</div>
+
+{% elif ds_nv %}
+<div class="section">
+    <h2>👥 Danh sách học viên khóa</h2>
+
+    <div class="grid">
+        {% for hv in ds_nv %}
+        <div class="card">
+            <h3>{{ hv[1] }}</h3>
+
+            <div class="info">Mã NV: {{ hv[0] }}</div>
+
+            <div class="info">
+            Trạng thái:
+            {% if hv[2] == "Đạt" %}
+                <span class="badge badge-done">Đạt</span>
+            {% elif hv[2] == "Chưa đạt" %}
+                <span class="badge badge-wait">Chưa đạt</span>
+            {% elif hv[2] == "Đang học" %}
+                <span class="badge badge-learning">Đang học</span>
+            {% else %}
+                <span class="badge badge-wait">{{ hv[2] }}</span>
+            {% endif %}
+            </div>
+
+            {% if hv[2] == "Đạt" or hv[2] == "Chưa đạt" %}
+                <a href="/nguoi_danh_gia/xem_lai/{{ ma_khoa }}/{{ hv[0] }}">
+                    <button class="btn" style="background:#16a34a">
+                        Xem lại đánh giá
+                    </button>
+                </a>
+            {% else %}
+                <a href="/nguoi_danh_gia/cham-diem/{{ ma_khoa }}/{{ hv[0] }}">
+                    <button class="btn">Chấm điểm</button>
+                </a>
+            {% endif %}
+
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="section">
+    <h2>🟡 Cần đánh giá và cho điểm</h2>
+    <div id="canDanhGia" class="grid"></div>
+</div>
+
+<div class="section">
+    <h2>✅ Xem lại đánh giá & điểm học viên</h2>
+    <div id="daDanhGia" class="grid"></div>
+</div>
+
+</div> <!-- END MAIN CONTENT -->
+
+<script>
+
+async function loadKhoa(){
+
+    try{
+        let res = await fetch("/nguoi_danh_gia/api/khoa_hoan_thanh")
+
+        if(!res.ok) throw new Error("API lỗi")
+
+        let data = await res.json()
+
+        renderCard("canDanhGia", data.chua_cham_xong || [], true)
+        renderCard("daDanhGia", data.da_cham_xong || [], false)
+    }
+    catch(err){
+        console.error(err)
+        document.getElementById("canDanhGia").innerHTML = "Lỗi load dữ liệu"
+        document.getElementById("daDanhGia").innerHTML = "Lỗi load dữ liệu"
+    }
+}
+
+function renderCard(divId, list, canCham){
+
+    let div = document.getElementById(divId)
+    div.innerHTML = ""
+
+    if(!list || list.length === 0){
+        div.innerHTML = "<i>Không có dữ liệu</i>"
+        return
+    }
+
+    list.forEach(k => {
+
+        div.innerHTML += `
+        <div class="card">
+
+            <h3>📘 ${k.ten}</h3>
+
+            <div class="info">👨‍🏫 Giảng viên: ${k.gv}</div>
+            <div class="info">📅 ${k.bd} → ${k.kt}</div>
+            <div class="info">👥 Đã chấm: ${k.cham}/${k.tong}</div>
+
+            ${
+                canCham
+                ?
+                `<a href="/nguoi_danh_gia/khoa/${k.ma}">
+                    <button class="btn">Chấm điểm học viên</button>
+                </a>`
+                :
+                `
+                <a href="/nguoi_danh_gia/khoa/${k.ma}">
+                    <button class="btn" style="background:#16a34a">
+                        Xem lại đánh giá
+                    </button>
+                </a>
+
+                <a href="/nguoi_danh_gia/xuat_excel_full/${k.ma}">
+                    <button class="btn">
+                        Xuất Excel báo cáo
+                    </button>
+                </a>
+                `
+            }
+
+        </div>
+        `
+    })
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+    loadKhoa()
+})
+
+</script>
+
+</body>
+</html>

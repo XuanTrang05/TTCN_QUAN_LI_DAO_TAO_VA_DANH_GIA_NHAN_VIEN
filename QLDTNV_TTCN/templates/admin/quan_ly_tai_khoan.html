@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Quản lý tài khoản</title>
+
+<style>
+*{ box-sizing:border-box; }
+
+body{
+    margin:0;
+    display:flex;
+    font-family:'Segoe UI',sans-serif;
+    background:linear-gradient(135deg,#eef2ff,#f8fafc);
+}
+
+/* SIDEBAR */
+.sidebar{
+    width:260px;
+    height:100vh;
+    background:linear-gradient(180deg,#1e293b,#0f172a);
+    color:white;
+    position:fixed;
+    left:0;
+    top:0;
+    padding-top:25px;
+}
+
+.sidebar h2{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.sidebar ul{ list-style:none; padding:0; }
+
+.sidebar li{ margin:8px 15px; }
+
+.sidebar a{
+    display:block;
+    padding:14px 18px;
+    border-radius:12px;
+    color:#cbd5e1;
+    text-decoration:none;
+    transition:0.3s;
+}
+
+.sidebar a:hover{
+    background:rgba(255,255,255,0.08);
+    color:white;
+    transform:translateX(5px);
+}
+
+.logout a{ color:#fbbf24; }
+
+/* MAIN */
+.wrapper{
+    margin-left:260px;
+    width:100%;
+}
+
+.page-header{
+    background:white;
+    padding:25px 40px;
+    box-shadow:0 5px 20px rgba(0,0,0,0.05);
+}
+
+.noi_dung{ padding:35px 40px; }
+
+/* CARD */
+.khung{
+    background:white;
+    border-radius:20px;
+    padding:25px;
+    margin-bottom:25px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.05);
+}
+
+/* FORM */
+.khung form{
+    display:grid;
+    gap:12px;
+}
+
+.khung input,
+.khung select{
+    padding:12px;
+    border-radius:12px;
+    border:1px solid #e2e8f0;
+}
+
+.khung button{
+    background:linear-gradient(45deg,#0ea5e9,#6366f1);
+    color:white;
+    border:none;
+    padding:12px;
+    border-radius:12px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+/* BUTTON SECONDARY */
+.btn-secondary{
+    background:#e2e8f0 !important;
+    color:#0f172a !important;
+}
+
+/* TABLE */
+table{
+    width:100%;
+    border-collapse:collapse;
+    border-radius:15px;
+    overflow:hidden;
+}
+
+table th{
+    background:#f1f5f9;
+    padding:14px;
+    text-align:left;
+}
+
+table td{ padding:14px; }
+
+table tr{ border-top:1px solid #f1f5f9; }
+
+table tbody tr:hover{ background:#f8fafc; }
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <h2>⚙ ADMIN</h2>
+    <ul>
+        <li><a href="/admin/trang-chu">🏠 Trang chủ</a></li>
+        <li><a href="/admin/nhan-vien">👨‍💼 Nhân viên</a></li>
+        <li><a href="/admin/quan-ly-khoa-dao-tao">📚 Khóa đào tạo</a></li>
+        <li><a href="/admin/quan-ly-tai-khoan">🔐 Tài khoản</a></li>
+        <li><a href="/admin/bao-cao">📊 Báo cáo</a></li>
+        <li class="logout"><a href="/dang-xuat">🚪 Đăng xuất</a></li>
+    </ul>
+</div>
+
+<div class="wrapper">
+
+<div class="page-header">
+    <h2>Quản lý tài khoản người dùng</h2>
+</div>
+
+<div class="noi_dung">
+
+<!-- FORM -->
+<div class="khung">
+<h3>
+{% if tai_khoan_sua %} Sửa tài khoản {% else %} Thêm tài khoản mới {% endif %}
+</h3>
+
+<form method="post"
+action="{% if tai_khoan_sua %}
+{{ url_for('admin.cap_nhat_tai_khoan') }}
+{% else %}
+{{ url_for('admin.them_tai_khoan') }}
+{% endif %}">
+
+<label>Tên đăng nhập</label>
+<input name="ten_dang_nhap"
+value="{{ tai_khoan_sua.ten_dang_nhap if tai_khoan_sua else '' }}"
+{% if tai_khoan_sua %}readonly{% endif %} required>
+
+<label>Mật khẩu</label>
+<input type="password"
+name="mat_khau"
+placeholder="{% if tai_khoan_sua %}Để trống nếu không đổi{% endif %}"
+{% if not tai_khoan_sua %}required{% endif %}>
+
+<label>Quyền</label>
+<select name="vai_tro" required>
+<option value="admin" {% if tai_khoan_sua and tai_khoan_sua.vai_tro=='admin' %}selected{% endif %}>Admin</option>
+<option value="nhan_vien" {% if tai_khoan_sua and tai_khoan_sua.vai_tro=='nhan_vien' %}selected{% endif %}>Nhân viên</option>
+<option value="nguoi_danh_gia" {% if tai_khoan_sua and tai_khoan_sua.vai_tro=='nguoi_danh_gia' %}selected{% endif %}>Người đánh giá</option>
+</select>
+
+<label>Mã nhân viên</label>
+<input type="number"
+name="ma_nhan_vien"
+value="{{ tai_khoan_sua.ma_nhan_vien if tai_khoan_sua else '' }}">
+
+<button type="submit">
+{% if tai_khoan_sua %}Cập nhật{% else %}Thêm tài khoản{% endif %}
+</button>
+
+<!-- ✅ NÚT HỦY CHỈNH SỬA -->
+{% if tai_khoan_sua %}
+<a href="{{ url_for('admin.quan_ly_tai_khoan') }}">
+<button type="button" class="btn-secondary">Hủy chỉnh sửa</button>
+</a>
+{% endif %}
+
+</form>
+</div>
+
+<!-- SEARCH -->
+<div class="khung">
+<h3>Tìm kiếm tài khoản</h3>
+<form method="get" action="{{ url_for('admin.quan_ly_tai_khoan') }}">
+<input name="tu_khoa" value="{{ request.args.get('tu_khoa','') }}"
+placeholder="Tên đăng nhập, vai trò hoặc tên nhân viên">
+<button type="submit">Tìm</button>
+</form>
+
+<!-- ✅ NÚT QUAY LẠI DANH SÁCH -->
+{% if request.args.get("tu_khoa") %}
+<br>
+<a href="{{ url_for('admin.quan_ly_tai_khoan') }}">
+<button class="btn-secondary">Quay lại danh sách tài khoản</button>
+</a>
+{% endif %}
+
+</div>
+
+<!-- TABLE -->
+<div class="khung">
+<h3>Danh sách tài khoản</h3>
+
+<table>
+<tr>
+<th>Tên đăng nhập</th>
+<th>Vai trò</th>
+<th>Tên nhân viên</th>
+<th>Mã nhân viên</th>
+<th>Thao tác</th>
+</tr>
+
+{% for tk in danh_sach_tai_khoan %}
+<tr>
+<td>{{ tk.ten_dang_nhap }}</td>
+<td>{{ tk.vai_tro }}</td>
+<td>{{ tk.ten_nhan_vien if tk.ten_nhan_vien else '—' }}</td>
+<td>{{ tk.ma_nhan_vien if tk.ma_nhan_vien else '—' }}</td>
+<td>
+<a href="{{ url_for('admin.quan_ly_tai_khoan') }}?sua={{ tk.ten_dang_nhap }}">✏️</a>
+<a href="{{ url_for('admin.xoa_tai_khoan', ten_dang_nhap=tk.ten_dang_nhap) }}">🗑️</a>
+</td>
+</tr>
+{% endfor %}
+</table>
+
+</div>
+
+</div>
+</div>
+
+</body>
+</html>

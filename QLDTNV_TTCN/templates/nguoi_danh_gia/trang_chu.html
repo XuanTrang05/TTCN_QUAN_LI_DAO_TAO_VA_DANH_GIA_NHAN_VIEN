@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Trang người đánh giá</title>
+
+    <link rel="stylesheet" href="/static/css/style_danh_gia.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="layout">
+
+    <!-- ===== SIDEBAR ===== -->
+    <div class="sidebar">
+        <h2>ĐÁNH GIÁ</h2>
+
+        <a href="/nguoi_danh_gia/">🏠 Trang chủ</a>
+        <a href="/nguoi_danh_gia/khoa-dao-tao">📚 Khóa đào tạo</a>
+        <a href="/nguoi_danh_gia/thuc_hien_danh_gia">📝 Thực hiện đánh giá</a>
+        <a href="/nguoi_danh_gia/thong_ke_danh_gia">📊 Thống kê đánh giá</a>
+        <a href="/dang-xuat" style="color:#fbbf24;">🚪 Đăng xuất</a>
+    </div>
+
+
+    <!-- ===== CONTENT ===== -->
+    <div class="content">
+
+        <!-- HEADER -->
+        <div class="header">
+            <h1>Xin chào, {{ ten_user }} 👋</h1>
+            <p>Hệ thống quản lý đào tạo & đánh giá nhân viên</p>
+        </div>
+
+
+        <!-- CARDS -->
+        <div class="card-container">
+
+            <div class="card">
+                <h3>📚 Khóa đào tạo</h3>
+                <p>Xem danh sách khóa bạn phụ trách và quản lý đánh giá.</p>
+
+                <a class="btn" href="/nguoi_danh_gia/khoa-dao-tao">
+                    Xem khóa đào tạo
+                </a>
+            </div>
+
+
+            <div class="card">
+                <h3>📝 Thực hiện đánh giá</h3>
+                <p>Chấm điểm, nhập nhận xét và lưu kết quả đánh giá nhân viên.</p>
+
+                <a class="btn" href="/nguoi_danh_gia/thuc_hien_danh_gia">
+                    Bắt đầu đánh giá
+                </a>
+            </div>
+
+
+            <div class="card">
+                <h3>📊 Thống kê đánh giá</h3>
+                <p>Theo dõi kết quả đánh giá, điểm trung bình và chất lượng đào tạo.</p>
+
+                <a class="btn" href="/nguoi_danh_gia/thong_ke_danh_gia">
+                    Xem thống kê
+                </a>
+            </div>
+
+        </div>
+
+        <!-- ❌ ĐÃ XÓA INFO BOX HƯỚNG DẪN NHANH -->
+
+    </div>
+
+</div>
+
+</body>
+</html>

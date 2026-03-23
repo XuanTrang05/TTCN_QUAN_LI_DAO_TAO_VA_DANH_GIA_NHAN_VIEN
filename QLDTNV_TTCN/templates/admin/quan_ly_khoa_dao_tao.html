@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý khóa đào tạo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/giao_dien.css') }}">
+
+    <style>
+
+        /* ===== ADD RESET ===== */
+        *{
+            box-sizing:border-box;
+        }
+
+        /* ===== BODY FLEX ===== */
+        body{
+            margin:0;
+            display:flex;
+            font-family:'Segoe UI',sans-serif;
+            background:#f3f6fb;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar{
+            width:240px;
+            height:100vh;
+            background:#22304a;
+            color:white;
+            position:fixed;
+            left:0;
+            top:0;
+            padding-top:20px;
+            z-index:1000;
+        }
+
+        .sidebar ul{
+            list-style:none;
+            padding:0;
+            margin:0;
+        }
+
+        .sidebar li{
+            padding:14px 20px;
+        }
+
+        .sidebar a{
+            color:#cbd5e1;
+            text-decoration:none;
+            font-size:16px;
+            display:block;
+            border-radius:6px;
+            padding:8px 10px;
+            transition:0.2s;
+        }
+
+        .sidebar a:hover{
+            background:rgba(255,255,255,0.08);
+            color:white;
+            padding-left:15px;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content{
+            margin-left:240px;
+            width:100%;
+            min-height:100vh;
+        }
+
+        /* ===== ADD CONTAINER ===== */
+        .container{
+            padding:25px 35px;
+        }
+
+        /* ===== ORIGINAL CODE ===== */
+        .toolbar{display:flex;justify-content:space-between;margin:15px 0}
+        .toolbar input{
+            width:280px;
+            padding:10px;
+            border-radius:6px;
+            border:1px solid #ddd;
+        }
+
+        .btn-add{
+            background:#1677ff;
+            color:#fff;
+            padding:10px 16px;
+            border-radius:6px;
+            text-decoration:none;
+            font-weight:bold;
+            cursor:pointer;
+        }
+
+        .tabs span{margin-right:20px;cursor:pointer;font-weight:600}
+        .tabs .active{color:#1677ff}
+
+        .course-grid{
+            display:grid;
+            grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+            gap:20px;
+            margin-top:20px
+        }
+
+        .course-card{
+            background:#fff;
+            padding:16px;
+            border-radius:10px;
+            box-shadow:0 2px 10px rgba(0,0,0,.08)
+        }
+
+        .badge{
+            display:inline-block;
+            padding:4px 10px;
+            border-radius:20px;
+            font-size:13px;
+            font-weight:bold
+        }
+
+        .dang{background:#e6f7ff;color:#1677ff}
+        .sap{background:#f0f5ff;color:#2f54eb}
+        .hoan{background:#f6ffed;color:#389e0d}
+
+        .meta{font-size:14px;margin:6px 0}
+
+        .actions{
+            margin-top:10px;
+            border-top:1px dashed #ddd;
+            padding-top:10px
+        }
+
+        .actions input{
+            width:100%;
+            padding:8px;
+            margin-bottom:6px;
+            border-radius:6px;
+            border:1px solid #ddd;
+        }
+
+        .btn{
+            padding:6px 10px;
+            border:none;
+            border-radius:5px;
+            cursor:pointer;
+            font-weight:bold
+        }
+
+        .btn-blue{background:#1677ff;color:#fff}
+        .btn-red{background:#ff4d4f;color:#fff}
+        .btn-gray{background:#666;color:#fff}
+
+        .modal{
+            display:none;
+            position:fixed;
+            inset:0;
+            background:rgba(0,0,0,.5);
+            z-index:2000
+        }
+
+        .modal-content{
+            background:#fff;
+            width:520px;
+            margin:80px auto;
+            padding:20px;
+            border-radius:10px
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse
+        }
+
+        th,td{
+            border:1px solid #ddd;
+            padding:8px;
+            text-align:left
+        }
+
+        th{background:#f5f5f5}
+
+        textarea{
+            width:100%;
+            padding:8px;
+            border-radius:6px;
+            border:1px solid #ddd;
+            margin-bottom:8px;
+        }
+
+        select{
+            width:100%;
+            padding:8px;
+            border-radius:6px;
+            border:1px solid #ddd;
+            margin-bottom:8px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <ul>
+        <li><a href="/admin/trang-chu">🏠 Trang chủ</a></li>
+        <li><a href="/admin/nhan-vien">👨‍💼 Nhân viên</a></li>
+        <li><a href="/admin/quan-ly-khoa-dao-tao">📚 Khóa đào tạo</a></li>
+        <li><a href="/admin/quan-ly-tai-khoan">🔐 Tài khoản</a></li>
+        <li><a href="/admin/bao-cao">📊 Báo cáo</a></li>
+        <li><a href="/dang-xuat" style="color:#fbbf24;">🚪 Đăng xuất</a></li>
+    </ul>
+</div>
+
+<!-- MAIN -->
+<div class="main-content">
+
+<div class="container">
+
+    <h1>Khóa đào tạo</h1>
+    <p>Quản lý và theo dõi các khóa đào tạo</p>
+
+    <div class="toolbar">
+        <input type="text" id="searchInput" placeholder="Tìm kiếm khóa học..." onkeyup="filterCourse()">
+        <a class="btn-add" onclick="openForm()">+ Tạo khóa học</a>
+    </div>
+
+    <div class="tabs">
+        <span class="tab active" onclick="showTab(event,'dang')">Đang diễn ra</span>
+        <span class="tab" onclick="showTab(event,'sap')">Sắp tới</span>
+        <span class="tab" onclick="showTab(event,'hoan')">Hoàn thành</span>
+    </div>
+
+
+   <!-- ================= ĐANG DIỄN RA ================= -->
+<div id="dang" class="course-grid tab-content">
+    {% for k in dang_dien_ra %}
+    <div class="course-card">
+        <span class="badge dang">Đang diễn ra</span>
+        <h4 class="course-name">{{ k.ten_khoa_dao_tao }}</h4>
+        <p>{{ k.mo_ta }}</p>
+        <div class="meta">📅 {{ k.ngay_bat_dau }} → {{ k.ngay_ket_thuc }}</div>
+        <div class="meta">👥 {{ k.so_hoc_vien }}/{{ k.si_so_toi_da }}</div>
+        <div class="meta">👨‍🏫 Giảng viên: {{ k.ten_giang_vien if k.ten_giang_vien else "Chưa phân công" }}</div>
+
+        <div class="actions">
+            <form method="POST" action="{{ url_for('admin.phan_cong') }}">
+                <input type="hidden" name="ma_khoa_dao_tao" value="{{ k.ma_khoa_dao_tao }}">
+                <input type="number" name="ma_nhan_vien" placeholder="Mã nhân viên tham gia" required>
+                <button class="btn btn-blue" type="submit">Phân công</button>
+            </form>
+
+            <button type="button" class="btn btn-gray"
+                    onclick="xemHocVien('{{ k.ma_khoa_dao_tao }}')">
+                👥 Xem học viên
+            </button>
+        </div>
+    </div>
+    {% else %}
+    <p>Không có khóa học đang diễn ra</p>
+    {% endfor %}
+</div>
+
+    <!-- ================= SẮP TỚI ================= -->
+<div id="sap" class="course-grid tab-content" style="display:none">
+    {% for k in sap_dien_ra %}
+    <div class="course-card">
+        <span class="badge sap">Sắp tới</span>
+        <h4 class="course-name">{{ k.ten_khoa_dao_tao }}</h4>
+        <p>{{ k.mo_ta }}</p>
+        <div class="meta">📅 {{ k.ngay_bat_dau }} → {{ k.ngay_ket_thuc }}</div>
+        <div class="meta">👥 {{ k.so_hoc_vien }}/{{ k.si_so_toi_da }}</div>
+        <div class="meta">👨‍🏫 Giảng viên: {{ k.ten_giang_vien if k.ten_giang_vien else "Chưa phân công" }}</div>
+
+        <div class="actions">
+
+            <!-- ✅ THÊM PHÂN CÔNG HỌC VIÊN -->
+            <form method="POST" action="{{ url_for('admin.phan_cong') }}">
+                <input type="hidden" name="ma_khoa_dao_tao" value="{{ k.ma_khoa_dao_tao }}">
+                <input type="number" name="ma_nhan_vien" placeholder="Mã nhân viên tham gia" required>
+                <button class="btn btn-blue" type="submit">Phân công</button>
+            </form>
+
+            <!-- XEM HỌC VIÊN -->
+            <button type="button" class="btn btn-gray"
+                    onclick="xemHocVien('{{ k.ma_khoa_dao_tao }}')">
+                👥 Xem học viên
+            </button>
+
+            <!-- XÓA -->
+            <a href="{{ url_for('admin.xoa_khoa_dao_tao', ma_khoa=k.ma_khoa_dao_tao) }}"
+               onclick="return confirm('Bạn chắc chắn muốn xóa khóa đào tạo này?')">
+                <button type="button" class="btn btn-red">Xóa khóa</button>
+            </a>
+
+        </div>
+
+    </div>
+    {% else %}
+    <p>Không có khóa học sắp tới</p>
+    {% endfor %}
+</div>
+
+<!-- ================= HOÀN THÀNH ================= -->
+<div id="hoan" class="course-grid tab-content" style="display:none">
+    {% for k in da_ket_thuc %}
+    <div class="course-card">
+        <span class="badge hoan">Hoàn thành</span>
+        <h4 class="course-name">{{ k.ten_khoa_dao_tao }}</h4>
+        <p>{{ k.mo_ta }}</p>
+        <div class="meta">📅 {{ k.ngay_bat_dau }} → {{ k.ngay_ket_thuc }}</div>
+        <div class="meta">👥 {{ k.so_hoc_vien }}/{{ k.si_so_toi_da }}</div>
+        <div class="meta">👨‍🏫 Giảng viên: {{ k.ten_giang_vien if k.ten_giang_vien else "Chưa phân công" }}</div>
+
+        <div class="actions">
+
+            <!-- XEM HỌC VIÊN (có điểm, kết quả, đánh giá) -->
+            <button type="button" class="btn btn-gray"
+                    onclick="xemHocVien('{{ k.ma_khoa_dao_tao }}')">
+                👥 Xem học viên
+            </button>
+
+            <!-- ✅ THÊM XUẤT EXCEL -->
+            <a href="/admin/khoa-dao-tao/{{ k.ma_khoa_dao_tao }}/xuat-excel">
+                <button type="button" class="btn btn-blue">
+                    📥 Xuất Excel
+                </button>
+            </a>
+
+        </div>
+    </div>
+    {% else %}
+    <p>Chưa có khóa học hoàn thành</p>
+    {% endfor %}
+</div>
+
+<!-- ================= MODAL DANH SÁCH HỌC VIÊN ================= -->
+<div class="modal" id="hocVienModal">
+    <div class="modal-content">
+        <h3>Danh sách học viên</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Mã NV</th>
+                    <th>Họ tên</th>
+                    <th>Phòng ban</th>
+                    <th>Điểm</th>
+                    <th>Kết quả</th>
+                    <th>Đánh giá</th>
+                </tr>
+            </thead>
+            <tbody id="hocVienBody"></tbody>
+        </table>
+
+        <br>
+
+        <!-- ✅ SỬA: thêm href mặc định + download -->
+        <a id="btnExcel"
+           href="#"
+           download
+           class="btn btn-blue">
+            📥 Xuất Excel
+        </a>
+
+        <button type="button" class="btn btn-red" onclick="closeHocVien()">Đóng</button>
+    </div>
+</div>
+
+<!-- ================= MODAL THÊM KHÓA ================= -->
+<div class="modal" id="formModal">
+    <div class="modal-content">
+        <h3>Thêm khóa đào tạo</h3>
+
+        <form method="POST" action="/admin/them-khoa-dao-tao">
+            <input name="ten_khoa" placeholder="Tên khóa học" required>
+            <textarea name="mo_ta" placeholder="Mô tả"></textarea>
+            <input type="number" name="si_so" placeholder="Sĩ số tối đa" required>
+            <input type="date" name="ngay_bat_dau" required>
+            <input type="date" name="ngay_ket_thuc" required>
+
+            <select name="ma_giang_vien" required>
+                <option value="">-- Chọn giảng viên --</option>
+                {% for nv in danh_sach_nhan_vien %}
+                    <option value="{{ nv.ma_nhan_vien }}">
+                        {{ nv.ho_ten }} (Mã: {{ nv.ma_nhan_vien }})
+            </option>
+        {% endfor %}
+    </select>
+
+    <button type="submit" class="btn btn-blue">Lưu</button>
+    <button type="button" onclick="closeForm()">Hủy</button>
+</form>
+
+    </div>
+</div>
+
+<script>
+function showTab(e,id){
+    document.querySelectorAll('.tab-content').forEach(t=>t.style.display='none');
+    document.getElementById(id).style.display='grid';
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    e.target.classList.add('active');
+    filterCourse();
+}
+
+function openForm(){document.getElementById('formModal').style.display='block'}
+function closeForm(){document.getElementById('formModal').style.display='none'}
+
+function filterCourse(){
+    let q=document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('.course-card').forEach(c=>{
+        let n=c.querySelector('.course-name');
+        if(!n) return;
+        c.style.display=n.innerText.toLowerCase().includes(q)?'':'none';
+    });
+}
+
+/* ===== XEM HỌC VIÊN ===== */
+function xemHocVien(maKhoa){
+    fetch(`/admin/khoa-dao-tao/${maKhoa}/hoc-vien`)
+    .then(r=>r.json())
+    .then(data=>{
+        let body=document.getElementById('hocVienBody');
+        body.innerHTML='';
+        data.forEach(h=>{
+            body.innerHTML+=`
+                <tr>
+                    <td>${h.ma_nhan_vien}</td>
+                    <td>${h.ho_ten}</td>
+                    <td>${h.phong_ban ?? ''}</td>
+                    <td>${h.diem ?? ''}</td>
+                    <td>${h.ket_qua ?? ''}</td>
+                    <td>${h.danh_gia ?? ''}</td>
+                </tr>`;
+        });
+
+        /* ✅ SỬA: gán link Excel ĐÚNG ROUTE */
+        const btnExcel=document.getElementById('btnExcel');
+        btnExcel.href=`/admin/khoa-dao-tao/${maKhoa}/xuat-excel`;
+
+        document.getElementById('hocVienModal').style.display='block';
+    })
+    .catch(()=>alert("Không tải được danh sách học viên"));
+}
+
+function closeHocVien(){
+    document.getElementById('hocVienModal').style.display='none';
+}
+
+/* ===== CLICK NGOÀI MODAL ===== */
+window.onclick=function(e){
+    if(e.target.id==='hocVienModal') closeHocVien();
+    if(e.target.id==='formModal') closeForm();
+}
+</script>
+
+</body>
+</html>

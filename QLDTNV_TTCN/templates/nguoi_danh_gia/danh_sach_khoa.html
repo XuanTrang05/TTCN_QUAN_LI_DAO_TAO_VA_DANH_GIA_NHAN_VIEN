@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Khóa đào tạo</title>
+
+<link rel="stylesheet" href="/static/css/style_danh_gia.css">
+
+<style>
+
+.section-title{
+    font-size:26px;
+    font-weight:700;
+    margin-bottom:25px;
+    color:#1e40af;
+}
+
+.filter-cards{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:20px;
+    margin-bottom:30px;
+}
+
+.filter-card{
+    background:white;
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 5px 20px rgba(0,0,0,0.08);
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.filter-card:hover{
+    transform:translateY(-5px);
+}
+
+.course-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:20px;
+}
+
+/* ✅ FIX: Thêm style cho khoa-card (để không mất khung) */
+.khoa-card{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 5px 20px rgba(0,0,0,0.08);
+    transition:0.3s;
+}
+
+.khoa-card:hover{
+    transform:translateY(-5px);
+    box-shadow:0 10px 30px rgba(0,0,0,0.12);
+}
+
+.khoa-card h3{
+    color:#1e40af;
+    margin-bottom:10px;
+}
+
+.khoa-card p{
+    font-size:14px;
+    margin:5px 0;
+}
+
+/* ===== BUTTON ===== */
+.btn-action{
+    padding:8px 14px;
+    border:none;
+    border-radius:8px;
+    background:#2563eb;
+    color:white;
+    cursor:pointer;
+    margin-right:8px;
+    margin-top:10px;
+}
+
+.btn-action:hover{
+    opacity:0.9;
+}
+
+.btn-action.excel{
+    background:#059669;
+}
+
+/* ===== POPUP ===== */
+.popup{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.4);
+    display:none;
+    justify-content:center;
+    align-items:center;
+}
+
+.popup-box{
+    background:white;
+    padding:25px;
+    border-radius:15px;
+    width:600px;
+    max-height:80vh;
+    overflow:auto;
+}
+
+.popup table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.popup th,.popup td{
+    border-bottom:1px solid #eee;
+    padding:10px;
+    text-align:left;
+}
+
+.hidden{
+    display:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- ✅ ADD LAYOUT + SIDEBAR (GIỐNG TRANG CHỦ) -->
+<div class="layout">
+
+    <div class="sidebar">
+        <h2>ĐÁNH GIÁ</h2>
+
+        <a href="/nguoi_danh_gia/">🏠 Trang chủ</a>
+        <a href="/nguoi_danh_gia/khoa-dao-tao">📚 Khóa đào tạo</a>
+        <a href="/nguoi_danh_gia/thuc_hien_danh_gia">📝 Thực hiện đánh giá</a>
+        <a href="/nguoi_danh_gia/thong_ke_danh_gia">📊 Thống kê đánh giá</a>
+        <a href="/dang-xuat">🚪 Đăng xuất</a>
+    </div>
+
+    <!-- ✅ WRAP CONTENT -->
+    <div class="content">
+
+<h2 class="section-title">📚 Khóa đào tạo được phân công</h2>
+
+
+<!-- ===== 3 MỤC ===== -->
+<div class="filter-cards">
+
+    <div class="filter-card" onclick="showTab('dang')">
+        <h3>🔥 Đang diễn ra</h3>
+        <p>{{ dang_dien_ra|length }} khóa</p>
+    </div>
+
+    <div class="filter-card" onclick="showTab('sap')">
+        <h3>⏳ Sắp bắt đầu</h3>
+        <p>{{ sap_dien_ra|length }} khóa</p>
+    </div>
+
+    <div class="filter-card" onclick="showTab('xong')">
+        <h3>✅ Đã hoàn thành</h3>
+        <p>{{ da_hoan_thanh|length }} khóa</p>
+    </div>
+
+</div>
+
+
+<!-- ===== ĐANG DIỄN RA ===== -->
+<div id="tab-dang" class="course-grid">
+
+{% for k in dang_dien_ra %}
+<div class="khoa-card">
+
+    <h3>{{ k[1] }}</h3>
+
+    <p>👥 Sĩ số tối đa: {{ k[4] or "Chưa cập nhật" }}</p>
+
+    <p>👨‍🏫 Người đánh giá: {{ k[5] or "Chưa phân công" }}</p>
+
+    <p>📅 Bắt đầu: {{ k[2] }}</p>
+
+    <p>📅 Kết thúc: {{ k[3] }}</p>
+
+    <div>
+        <button onclick="xemHocVien('{{ k[0] }}')" class="btn-action">
+            👥 Xem học viên
+        </button>
+
+        <button onclick="xuatExcel('{{ k[0] }}')" class="btn-action excel">
+            📥 Xuất Excel
+        </button>
+    </div>
+
+</div>
+{% endfor %}
+
+</div>
+
+
+<!-- ===== SẮP DIỄN RA ===== -->
+<div id="tab-sap" class="course-grid hidden">
+
+{% for k in sap_dien_ra %}
+<div class="khoa-card">
+
+    <h3>{{ k[1] }}</h3>
+
+    <p>👥 Sĩ số tối đa: {{ k[4] or "Chưa cập nhật" }}</p>
+
+    <p>👨‍🏫 Người đánh giá: {{ k[5] or "Chưa phân công" }}</p>
+
+    <p>📅 Bắt đầu: {{ k[2] }}</p>
+
+    <p>📅 Kết thúc: {{ k[3] }}</p>
+
+    <div>
+        <button onclick="xemHocVien('{{ k[0] }}')" class="btn-action">
+            👥 Xem học viên
+        </button>
+
+        <button onclick="xuatExcel('{{ k[0] }}')" class="btn-action excel">
+            📥 Xuất Excel
+        </button>
+    </div>
+
+</div>
+{% endfor %}
+
+</div>
+
+
+<!-- ===== ĐÃ HOÀN THÀNH ===== -->
+<div id="tab-xong" class="course-grid hidden">
+
+{% for k in da_hoan_thanh %}
+<div class="khoa-card">
+
+    <h3>{{ k[1] }}</h3>
+
+    <p>👥 Sĩ số tối đa: {{ k[4] or "Chưa cập nhật" }}</p>
+
+    <p>👨‍🏫 Người đánh giá: {{ k[5] or "Chưa phân công" }}</p>
+
+    <p>📅 Bắt đầu: {{ k[2] }}</p>
+
+    <p>📅 Kết thúc: {{ k[3] }}</p>
+
+    <div>
+        <button onclick="xemHocVien('{{ k[0] }}')" class="btn-action">
+            👥 Xem học viên
+        </button>
+
+        <button onclick="xuatExcel('{{ k[0] }}')" class="btn-action excel">
+            📥 Xuất Excel
+        </button>
+    </div>
+
+</div>
+{% endfor %}
+
+</div>
+
+
+<!-- POPUP -->
+<div id="popupHocVien" class="popup">
+    <div class="popup-box">
+
+        <h3>Danh sách học viên</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Mã</th>
+                    <th>Họ tên</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
+
+            <tbody id="dsHocVien"></tbody>
+        </table>
+
+        <br>
+        <button onclick="dongPopup()" class="btn-action">Đóng</button>
+
+    </div>
+</div>
+
+    </div> <!-- END CONTENT -->
+</div> <!-- END LAYOUT -->
+
+
+<script>
+function showTab(type){
+
+    document.getElementById("tab-dang").classList.add("hidden")
+    document.getElementById("tab-sap").classList.add("hidden")
+    document.getElementById("tab-xong").classList.add("hidden")
+
+    if(type==="dang"){
+        document.getElementById("tab-dang").classList.remove("hidden")
+    }
+
+    if(type==="sap"){
+        document.getElementById("tab-sap").classList.remove("hidden")
+    }
+
+    if(type==="xong"){
+        document.getElementById("tab-xong").classList.remove("hidden")
+    }
+}
+
+function xemHocVien(maKhoa){
+
+    fetch("/nguoi_danh_gia/api/hoc_vien/"+maKhoa)
+    .then(res=>res.json())
+    .then(data=>{
+
+        let html=""
+
+        data.forEach(hv=>{
+            html+=`
+                <tr>
+                    <td>${hv.ma}</td>
+                    <td>${hv.ten}</td>
+                    <td>${hv.email}</td>
+                </tr>
+            `
+        })
+
+        document.getElementById("dsHocVien").innerHTML=html
+        document.getElementById("popupHocVien").style.display="flex"
+
+    })
+}
+
+function dongPopup(){
+    document.getElementById("popupHocVien").style.display="none"
+}
+
+function xuatExcel(maKhoa){
+    window.location="/nguoi_danh_gia/xuat_excel/"+maKhoa
+}
+</script>
+
+</body>
+</html>
